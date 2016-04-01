@@ -45,6 +45,7 @@
 #include "scno.h"
 #include "regs.h"
 #include "ptrace.h"
+#include "gdbserver.h"
 
 int
 string_to_uint_ex(const char *const str, char **const endptr,
@@ -1171,6 +1172,9 @@ umoven(struct tcb *const tcp, kernel_ulong_t addr, unsigned int len,
 		char x[sizeof(long)];
 	} u;
 
+	if (gdbserver)
+		return gdb_read_mem(pid, addr, len, false, laddr);
+
 #if ANY_WORDSIZE_LESS_THAN_KERNEL_LONG
 	if (current_wordsize < sizeof(addr)
 	    && (addr & (~ (kernel_ulong_t) -1U))) {
@@ -1318,6 +1322,9 @@ umovestr(struct tcb *const tcp, kernel_ulong_t addr, unsigned int len, char *lad
 		unsigned long val;
 		char x[sizeof(long)];
 	} u;
+
+	if (gdbserver)
+		return gdb_read_mem(pid, addr, len, true, laddr);
 
 #if ANY_WORDSIZE_LESS_THAN_KERNEL_LONG
 	if (current_wordsize < sizeof(addr)
