@@ -31,6 +31,7 @@
 #include <sys/param.h>
 #include <poll.h>
 
+#include "gdbserver.h"
 #include "syscall.h"
 
 const char **paths_selected = NULL;
@@ -101,6 +102,9 @@ getfdpath(struct tcb *tcp, int fd, char *buf, unsigned bufsize)
 {
 	char linkpath[sizeof("/proc/%u/fd/%u") + 2 * sizeof(int)*3];
 	ssize_t n;
+
+	if (gdbserver)
+		return gdb_getfdpath(tcp->pid, fd, buf, bufsize);
 
 	if (fd < 0)
 		return -1;
