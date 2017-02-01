@@ -1533,6 +1533,10 @@ test_ptrace_seize(void)
 {
 	int pid;
 
+	if (gdbserver) {
+		return;		/* gdbserver provides syscall info */
+	}
+
 	/* Need fork for test. NOMMU has no forks */
 	if (NOMMU_SYSTEM) {
 		post_attach_sigstop = 0; /* this sets use_seize to 1 */
@@ -1859,8 +1863,10 @@ init(int argc, char *argv[])
 
 	set_sigaction(SIGCHLD, SIG_DFL, &params_for_tracee.child_sa);
 
-	if (gdbserver)
-		gdb_init();
+	if (gdbserver) {
+		if (gdb_init() < 0)
+			error_msg_and_die("-G is not supported on this target.");
+	}
 
 #ifdef USE_LIBUNWIND
 	if (stack_trace_enabled) {

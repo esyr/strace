@@ -1178,7 +1178,9 @@ ptrace_setregs(pid_t pid)
 static void
 get_regs(pid_t pid)
 {
-#include "gdb_get_regs.c"
+	if (gdbserver)
+# include "gdb_get_regs.c"
+
 #undef USE_GET_SYSCALL_RESULT_REGS
 #ifdef ptrace_getregset_or_getregs
 
@@ -1252,12 +1254,17 @@ free_sysent_buf(void *ptr)
 int
 get_scno(struct tcb *tcp)
 {
+	int rc;
+
 	get_regs(tcp->pid);
 
 	if (get_regs_error)
 		return -1;
 
-	int rc = arch_get_scno(tcp);
+	if (gdbserver)		/* syscall number is already filled in */
+		rc = 1;
+	else
+		rc = arch_get_scno(tcp);
 	if (rc != 1)
 		return rc;
 

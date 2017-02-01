@@ -80,6 +80,7 @@ ftruncate64
 futex
 futimesat
 gen_tests.am
+gdbrsp
 get_mempolicy
 getcpu
 getcwd
