@@ -600,7 +600,7 @@ gdb_startup_child(char **argv)
 		gdb_set_non_stop(gdb, true);
         // TODO normal strace attaches right before exec, so the first syscall
         // seen is the execve with all its arguments.  Need to emulate that here?
-        hide_log_until_execve = 0;
+        tcp->flags &= ~TCB_HIDE_LOG;
 }
 
 void
