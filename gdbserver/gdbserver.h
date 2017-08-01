@@ -39,6 +39,12 @@ extern long gdb_get_regs(pid_t pid);
 static inline long gdb_get_regs(pid_t pid) { return -1; }
 #endif
 
+#ifdef GDBSERVER_ARCH_HAS_GET_REGS
+extern int gdb_set_regs(pid_t pid);
+#else
+static inline int gdb_set_regs(pid_t pid) { return -1; }
+#endif
+
 int gdb_init(void);
 void gdb_finalize_init(void);
 void gdb_cleanup(void);

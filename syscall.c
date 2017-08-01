@@ -1227,6 +1227,9 @@ get_regs(pid_t pid)
 static int
 set_regs(pid_t pid)
 {
+	if (gdbserver)
+		return gdb_set_regs(pid);
+
 	return ptrace_setregset_or_setregs(pid);
 }
 #endif /* ptrace_setregset_or_setregs */

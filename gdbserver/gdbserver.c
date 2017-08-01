@@ -41,6 +41,10 @@
 # include "gdb_get_regs.c"
 #endif
 
+#ifdef GDBSERVER_ARCH_HAS_SET_REGS
+# include "gdb_set_regs.c"
+#endif
+
 /* FIXME jistone: export hacks */
 struct tcb *pid2tcb(int pid);
 struct tcb *alloctcb(int pid);
