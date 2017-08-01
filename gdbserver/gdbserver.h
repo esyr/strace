@@ -29,9 +29,10 @@
 
 #include "protocol.h"
 
+#ifdef ENABLE_GDBSERVER
 #include "gdb_arch_defs.h"
 
-char* gdbserver;
+extern char *gdbserver;
 
 #ifdef GDBSERVER_ARCH_HAS_GET_REGS
 extern long gdb_get_regs(pid_t pid);
@@ -45,13 +46,21 @@ extern int gdb_set_regs(pid_t pid);
 static inline int gdb_set_regs(pid_t pid) { return -1; }
 #endif
 
-int gdb_init(void);
-void gdb_finalize_init(void);
-void gdb_cleanup(void);
-void gdb_detach(struct tcb *tcp);
-void gdb_startup_child(char **argv);
-void gdb_startup_attach(struct tcb *tcp);
-bool gdb_trace(void);
-char *gdb_recv_regs(pid_t tid, size_t *size);
-int gdb_read_mem(pid_t tid, long addr, unsigned int len, bool check_nil, char *out);
-int gdb_getfdpath(pid_t tid, int fd, char *buf, unsigned bufsize);
+extern int gdb_init(void);
+extern void gdb_finalize_init(void);
+extern void gdb_cleanup(void);
+extern void gdb_detach(struct tcb *tcp);
+extern void gdb_startup_child(char **argv);
+extern void gdb_startup_attach(struct tcb *tcp);
+extern bool gdb_trace(void);
+extern char *gdb_recv_regs(pid_t tid, size_t *size);
+extern int gdb_read_mem(pid_t tid, long addr, unsigned int len, bool check_nil,
+			char *out);
+extern int gdb_getfdpath(pid_t tid, int fd, char *buf, unsigned bufsize);
+#else
+/*
+ * This definition makes command-line handling code in strace.c
+ * a bit less cumbersome.
+ */
+# define gdbserver 0
+#endif
