@@ -48,7 +48,7 @@ void print_stopped(struct tcb *tcp, const siginfo_t *si, const unsigned int sig)
 struct tcb *current_tcp;
 int strace_child;
 
-char* gdbserver = NULL;
+char *gdbserver = NULL;
 static int general_pid; // process id that gdbserver is focused on
 static int general_tid; // thread id that gdbserver is focused on
 static struct gdb_conn* gdb = NULL;
