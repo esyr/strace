@@ -1,3 +1,6 @@
+#ifndef STRACE_GDBSERVER_H
+#define STRACE_GDBSERVER_H
+
 /* Interface of strace features over the GDB remote protocol.
  *
  * Copyright (c) 2015 Red Hat Inc.
@@ -64,3 +67,5 @@ extern int gdb_getfdpath(pid_t tid, int fd, char *buf, unsigned bufsize);
  */
 # define gdbserver 0
 #endif
+
+#endif /* !STRACE_GDBSERVER_H */
