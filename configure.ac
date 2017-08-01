@@ -41,7 +41,7 @@ AC_COPYRIGHT([Copyright (c) 1999-]copyright_year[ The strace developers.])
 AC_CONFIG_SRCDIR([strace.c])
 AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE([foreign nostdinc dist-xz silent-rules parallel-tests])
+AM_INIT_AUTOMAKE([foreign nostdinc dist-xz silent-rules parallel-tests subdir-objects])
 AM_EXTRA_RECURSIVE_TARGETS([check-valgrind])
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
