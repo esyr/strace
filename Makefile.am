@@ -54,11 +54,14 @@ OS_CPPFLAGS = -I$(builddir)/$(OS)/$(ARCH) \
 	      -I$(builddir) \
 	      -I$(srcdir)
 
-# jistone
+if ENABLE_GDBSERVER
 AM_CPPFLAGS = -I$(builddir)/gdbserver/$(ARCH) \
 	      -I$(srcdir)/gdbserver/$(ARCH) \
 	      -I$(builddir)/gdbserver \
 	      -I$(srcdir)/gdbserver $(OS_CPPFLAGS)
+else
+AM_CPPFLAGS = $(OS_CPPFLAGS)
+endif
 
 AM_CFLAGS_FOR_BUILD = $(WARN_CFLAGS_FOR_BUILD)
 AM_CPPFLAGS_FOR_BUILD = $(AM_CPPFLAGS)
@@ -275,10 +278,11 @@ strace_SOURCES =	\
 	xmalloc.c	\
 	# end of strace_SOURCES
 
-# jistone
+if ENABLE_GDBSERVER
 strace_SOURCES +=		\
 	gdbserver/gdbserver.c	\
 	gdbserver/protocol.c
+endif
 
 if USE_LIBUNWIND
 strace_SOURCES += unwind.c
