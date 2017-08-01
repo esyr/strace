@@ -1699,9 +1699,6 @@ init(int argc, char *argv[])
 		case 'f':
 			followfork++;
 			break;
-		case 'G':
-			gdbserver = strdup(optarg);
-			break;
 		case 'h':
 			usage();
 			break;
@@ -1774,6 +1771,11 @@ init(int argc, char *argv[])
 		case 'u':
 			username = xstrdup(optarg);
 			break;
+#ifdef ENABLE_GDBSERVER
+		case 'G':
+			gdbserver = strdup(optarg);
+			break;
+#endif
 #ifdef USE_LIBUNWIND
 		case 'k':
 			stack_trace_enabled = true;
