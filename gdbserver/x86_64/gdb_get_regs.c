@@ -1,14 +1,14 @@
 /* included in syscall.c:get_regs() */
 {
-        size_t size;
-        char *regs = gdb_get_regs(pid, &size);
+	size_t size;
+	char *regs = gdb_get_regs(pid, &size);
 	struct tcb *tcp = pid2tcb(pid);
-        if (regs) {
-                if (size == 0 || regs[0] == 'E') {
-                        get_regs_error = -1;
-                        free(regs);
-                        return;
-                }
+	if (regs) {
+		if (size == 0 || regs[0] == 'E') {
+			get_regs_error = -1;
+			free(regs);
+			return;
+		}
 
 		if (size == 624) {
 			get_regs_error = 0;
@@ -78,10 +78,10 @@
 			return;
 		}
 
-                else {
-                        get_regs_error = -1;
-                        free(regs);
-                        return;
+		else {
+			get_regs_error = -1;
+			free(regs);
+			return;
                 }
 	}
 }
