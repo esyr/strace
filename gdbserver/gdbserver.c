@@ -37,6 +37,10 @@
 #include "signals.h"
 #include "scno.h"
 
+#ifdef GDBSERVER_ARCH_HAS_GET_REGS
+# include "gdb_get_regs.c"
+#endif
+
 /* FIXME jistone: export hacks */
 struct tcb *pid2tcb(int pid);
 struct tcb *alloctcb(int pid);
@@ -341,10 +345,6 @@ gdb_ok(void)
 int
 gdb_init(void)
 {
-# if ! defined X86_64
-	return -1;		/* Only supported on x86_64 */
-# endif
-
         gdb_signal_map_init();
 
         if (gdbserver[0] == '|')
@@ -815,7 +815,7 @@ gdb_trace(void)
         	    if (debug_flag)
         		    printf ("%s %s\n", __FUNCTION__, cmd);
                 }
-            get_regs(tid);
+            gdb_get_regs(tid);
 
             // TODO need code equivalent to PTRACE_EVENT_EXEC?
 
@@ -930,7 +930,7 @@ gdb_trace(void)
 }
 
 char *
-gdb_get_regs(pid_t tid, size_t *size)
+gdb_recv_regs(pid_t tid, size_t *size)
 {
         if (!gdb)
                 return NULL;

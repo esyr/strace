@@ -1178,8 +1178,10 @@ ptrace_setregs(pid_t pid)
 static void
 get_regs(pid_t pid)
 {
-	if (gdbserver)
-# include "gdb_get_regs.c"
+	if (gdbserver) {
+		get_regs_error = gdb_get_regs();
+		return;
+	}
 
 #undef USE_GET_SYSCALL_RESULT_REGS
 #ifdef ptrace_getregset_or_getregs

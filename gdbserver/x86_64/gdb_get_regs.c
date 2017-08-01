@@ -1,17 +1,15 @@
-/* included in syscall.c:get_regs() */
+static long
+gdb_get_regs(pid_t pid)
 {
 	size_t size;
-	char *regs = gdb_get_regs(pid, &size);
+	char *regs = gdb_recv_regs(pid, &size);
 	struct tcb *tcp = pid2tcb(pid);
+
 	if (regs) {
 		if (size == 0 || regs[0] == 'E') {
-			get_regs_error = -1;
-			free(regs);
-			return;
-		}
-
-		if (size == 624) {
-			get_regs_error = 0;
+			ret = -1;
+		} else if (size == 624) {
+			ret = 0;
 			x86_io.iov_len = sizeof(i386_regs);
 
 			/* specified in 32bit-core.xml */
@@ -36,12 +34,8 @@
 			i386_regs.orig_eax = be64toh(gdb_decode_hex_n(&regs[616], 8));
 
 			update_personality(tcp, 1);
-			free(regs);
-			return;
-		}
-
-		else if (size >= 1088) {
-			get_regs_error = 0;
+		} else if (size >= 1088) {
+			ret = 0;
 			x86_io.iov_len = sizeof(x86_64_regs);
 
 			/* specified in 64bit-core.xml */
@@ -74,14 +68,12 @@
 			x86_64_regs.orig_rax = be64toh(gdb_decode_hex_n(&regs[1072], 16));
 
 			update_personality(tcp, 0);
-			free(regs);
-			return;
-		}
-
-		else {
-			get_regs_error = -1;
-			free(regs);
-			return;
+		} else {
+			ret = -1;
                 }
 	}
+
+	free(regs);
+
+	return ret;
 }

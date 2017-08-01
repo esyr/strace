@@ -29,7 +29,15 @@
 
 #include "protocol.h"
 
+#include "gdb_arch_defs.h"
+
 char* gdbserver;
+
+#ifdef GDBSERVER_ARCH_HAS_GET_REGS
+extern long gdb_get_regs(pid_t pid);
+#else
+static inline long gdb_get_regs(pid_t pid) { return -1; }
+#endif
 
 int gdb_init(void);
 void gdb_finalize_init(void);
@@ -38,6 +46,6 @@ void gdb_detach(struct tcb *tcp);
 void gdb_startup_child(char **argv);
 void gdb_startup_attach(struct tcb *tcp);
 bool gdb_trace(void);
-char *gdb_get_regs(pid_t tid, size_t *size);
+char *gdb_recv_regs(pid_t tid, size_t *size);
 int gdb_read_mem(pid_t tid, long addr, unsigned int len, bool check_nil, char *out);
 int gdb_getfdpath(pid_t tid, int fd, char *buf, unsigned bufsize);
