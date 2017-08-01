@@ -137,6 +137,7 @@ strace_SOURCES =	\
 	flock.h		\
 	futex.c		\
 	gcc_compat.h	\
+	gdbserver.h	\
 	get_robust_list.c \
 	getcpu.c	\
 	getcwd.c	\
