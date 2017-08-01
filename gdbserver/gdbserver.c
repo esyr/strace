@@ -414,29 +414,61 @@ static void
 gdb_init_syscalls(void)
 {
 	static const char syscall_cmd[] = "QCatchSyscalls:1";
-	const char *syscall_set = "";
+	const char *syscall_set = NULL;
 	bool want_syscall_set = false;
+	unsigned sc_count = 0;
 	unsigned sci;
 
 	/* Only send syscall list if a filtered list was given with -e */
-	for (sci = 0; sci < num_quals; sci++)
-		if (! (qual_flags[sci] & QUAL_TRACE)) {
+	for (sci = 0; sci < nsyscalls; sci++) {
+		if (!(qual_flags(sci) & QUAL_TRACE))
 			want_syscall_set = true;
-			break;
+		else
+			sc_count++;
+	}
+
+	if (want_syscall_set) {
+		/* 11 - maximum 8 characters per syscall number and 1 for ; */
+		size_t buf_size = sizeof(syscall_cmd) + sc_count * 9;
+		char *buf = malloc(buf_size);
+		char *pos;
+		int ret;
+
+		if (!buf)
+			goto gdb_init_syscalls_buf_fill_fail;
+
+		pos = stpcpy(buf, syscall_cmd);
+
+		sci = 0;
+		while (sci = next_set_qual_scno(sci, QUAL_TRACE),
+		    sci < nsyscalls) {
+			ret = snprintf(pos, buf_size - (pos - buf), ";%x", sci);
+
+			if (ret < 0 ||
+			    (unsigned) ret >= (buf_size - (pos - buf))) {
+				error_msg("couldn't enable gdb syscall catch "
+					  "filter");
+				free(buf);
+				goto gdb_init_syscalls_buf_fill_fail;
+			}
+
+			pos += ret;
+			sci++;
 		}
 
-	for (sci = 0; want_syscall_set && sci < num_quals; sci++)
-		if (qual_flags[sci] & QUAL_TRACE)
-			if (asprintf ((char**)&syscall_set, "%s;%x", syscall_set, sci) < 0)
-				error_msg("couldn't enable gdb syscall catching");
+		syscall_set = buf;
+	}
 
-	if (want_syscall_set)
-		asprintf ((char**)&syscall_set, "%s%s", syscall_cmd, syscall_set);
-	else
+gdb_init_syscalls_buf_fill_fail:
+	if (!syscall_set)
 		syscall_set = syscall_cmd;
+
         gdb_send(gdb, syscall_set, strlen(syscall_set));
         if (!gdb_ok())
                 error_msg("couldn't enable gdb syscall catching");
+
+	if (syscall_set != syscall_cmd)
+		free((void *) syscall_set);
 }
 
 static struct tcb*
