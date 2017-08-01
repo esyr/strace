@@ -657,6 +657,7 @@ extern struct number_set write_set;
 extern struct number_set signal_set;
 
 extern bool is_number_in_set(unsigned int number, const struct number_set *);
+unsigned next_set_qual_scno(const unsigned int scno, unsigned qual_flg);
 extern void qualify(const char *);
 extern unsigned int qual_flags(const unsigned int);
 

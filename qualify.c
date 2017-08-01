@@ -86,6 +86,43 @@ is_number_in_set(const unsigned int number, const struct number_set *const set)
 		&& number_isset(number, set->vec)) ^ set->not;
 }
 
+/**
+ * Returns index of the next non-zero bit (starting at bit number) in number set
+ * or limit.
+ */
+static unsigned
+next_set_bit_in_set(unsigned number, const struct number_set *const set,
+		    const unsigned limit)
+{
+	unsigned pos;
+	unsigned limit_slots = MIN(set->nslots,
+				   (limit + BITS_PER_SLOT - 1) / BITS_PER_SLOT);
+	number_slot_t bitmask;
+	number_slot_t cur_slot;
+
+
+	for (pos = number / BITS_PER_SLOT; pos < limit_slots; pos++) {
+		cur_slot = set->vec[pos] ^ (-1U * set->not);
+
+		if (cur_slot == 0) {
+			number = (number + BITS_PER_SLOT) & (-BITS_PER_SLOT);
+			continue;
+		}
+		bitmask = 1 << (number & (BITS_PER_SLOT - 1));
+		for (;;) {
+			if (cur_slot & bitmask)
+				return MIN(number, limit);
+			number++;
+			bitmask <<= 1;
+			/* This check *can't be* optimized out: */
+			if (bitmask == 0)
+				break;
+		}
+	}
+
+	return limit;
+}
+
 typedef int (*string_to_uint_func)(const char *);
 
 /*
@@ -694,4 +731,35 @@ qual_flags(const unsigned int scno)
 		   ? QUAL_RAW : 0)
 		| (is_number_in_set(scno, &inject_set[current_personality])
 		   ? QUAL_INJECT : 0);
+}
+
+unsigned
+next_set_qual_scno(const unsigned int scno, unsigned qual_flg)
+{
+	static const struct qual_set {
+		unsigned qual;
+		struct number_set *set;
+	} sets[] = {
+		{ QUAL_TRACE,   trace_set },
+		{ QUAL_ABBREV,  abbrev_set },
+		{ QUAL_VERBOSE, verbose_set },
+		{ QUAL_RAW,     raw_set },
+		{ QUAL_INJECT,  inject_set },
+		{ 0,            NULL }
+	};
+
+	const struct qual_set *pos = sets;
+	unsigned res = nsyscalls;
+	unsigned ret;
+
+	while (qual_flg && pos->qual) {
+		ret = next_set_bit_in_set(scno, pos->set + current_personality,
+					  nsyscalls);
+
+		res = MIN(res, ret);
+		qual_flg &= ~pos->qual;
+		pos++;
+	}
+
+	return res;
 }
