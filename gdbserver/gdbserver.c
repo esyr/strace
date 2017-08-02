@@ -27,14 +27,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "defs.h"
+
 #include <stdlib.h>
 #include <sys/wait.h>
 
-#include "defs.h"
 #include "gdbserver.h"
 #include "protocol.h"
-#include "signals.h"
 #include "scno.h"
+#include "signals.h"
 
 #ifdef GDBSERVER_ARCH_HAS_GET_REGS
 # include "gdb_get_regs.c"
