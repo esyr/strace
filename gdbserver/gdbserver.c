@@ -181,11 +181,8 @@ gdb_parse_thread(const char *id, int *pid, int *tid)
 		 * but if not, just use the PID.
 		 */
 		char *dot = strchr(id, '.');
-		if (!dot) {
-			*tid = *pid;
-		} else {
-			*tid = gdb_decode_hex_str(dot + 1);
-		}
+
+		*tid = dot ? gdb_decode_hex_str(dot + 1) : *pid;
 	} else {
 		/* just TID, assume same PID */
 		*tid = gdb_decode_hex_str(id);
