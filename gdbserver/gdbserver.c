@@ -52,7 +52,8 @@ void droptcb(struct tcb *tcp);
 void newoutf(struct tcb *tcp);
 void print_signalled(struct tcb *tcp, const int pid, int status);
 void print_exited(struct tcb *tcp, const int pid, int status);
-void print_stopped(struct tcb *tcp, const siginfo_t *si, const unsigned int sig);
+void print_stopped(struct tcb *tcp, const siginfo_t *si,
+		   const unsigned int sig);
 struct tcb *current_tcp;
 int strace_child;
 
@@ -163,6 +164,7 @@ gdb_signal_to_target(struct tcb *tcp, unsigned int signal)
 
 	if (pers < SUPPORTED_PERSONALITIES && signal < GDB_SIGNAL_LAST)
 		return gdb_signal_map[pers][signal];
+
 	return -1;
 }
 
@@ -204,10 +206,12 @@ gdb_recv_signal(struct gdb_stop_reply *stop)
 	/* tokenize the n:r pairs */
 	char *info = strdupa(reply + 3);
 	char *savetok = NULL, *nr;
+
 	for (nr = strtok_r(info, ";", &savetok); nr;
 	    nr = strtok_r(NULL, ";", &savetok)) {
 		char *n = strtok(nr, ":");
 		char *r = strtok(NULL, "");
+
 		if (!n || !r)
 			continue;
 
