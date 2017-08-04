@@ -1581,9 +1581,8 @@ test_ptrace_seize(void)
 			func_perr_and_die("unexpected wait result %d",
 					  tracee_pid);
 		}
-		if (WIFSIGNALED(status)) {
+		if (WIFSIGNALED(status))
 			return;
-		}
 
 		func_err_and_die("unexpected wait status %#x", status);
 	}
@@ -1906,8 +1905,7 @@ init(int argc, char *argv[])
 		}
 		run_uid = pent->pw_uid;
 		run_gid = pent->pw_gid;
-	}
-	else {
+	} else {
 		run_uid = getuid();
 		run_gid = getgid();
 	}
@@ -1941,11 +1939,12 @@ init(int argc, char *argv[])
 			 * when using popen, so prohibit it.
 			 */
 			if (followfork >= 2)
-				error_msg_and_help("piping the output and -ff are mutually exclusive");
+				error_msg_and_help("piping the output and -ff "
+						   "are mutually exclusive");
 			shared_log = strace_popen(outfname + 1);
-		}
-		else if (followfork < 2)
+		} else if (followfork < 2) {
 			shared_log = strace_fopen(outfname);
+		}
 	} else {
 		/* -ff without -o FILE is the same as single -f */
 		if (followfork >= 2)
