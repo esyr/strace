@@ -524,10 +524,6 @@ strace_fopen(const char *path)
 
 static int popen_pid = 0;
 
-#ifndef _PATH_BSHELL
-# define _PATH_BSHELL "/bin/sh"
-#endif
-
 /*
  * We cannot use standard popen(3) here because we have to distinguish
  * popen child process from other processes we trace, and standard popen(3)

@@ -93,6 +93,10 @@ extern char *stpcpy(char *dst, const char *src);
 # define sigemptyset __sigemptyset
 #endif
 
+#ifndef _PATH_BSHELL
+# define _PATH_BSHELL "/bin/sh"
+#endif
+
 /* Configuration section */
 #ifndef DEFAULT_STRLEN
 /* default maximum # of bytes printed in `printstr', change with -s switch */
