@@ -425,6 +425,17 @@ char *xstrdup(const char *str) ATTRIBUTE_MALLOC;
 			perror_msg(__VA_ARGS__); \
 	while (0)
 
+/* Simple wrappers for providing function name in error messages */
+#define func_err(...)              error_msg(__func__ ": " __VA_ARGS__)
+#define func_errno(e, ...)         errno_msg(e, __func__ ": " __VA_ARGS__)
+#define func_perr(...)             perror_msg(__func__ ": " __VA_ARGS__)
+#define func_dbg(...)              debug_msg(__func__ ": " __VA_ARGS__)
+#define func_dbgno(e, ...)         debugno_msg(e, __func__ ": " __VA_ARGS__)
+#define func_pdbg(...)             pdebug_msg(__func__ ": " __VA_ARGS__)
+#define func_err_and_die(...)      error_msg_and_die(__func__ ": " __VA_ARGS__)
+#define func_errno_and_die(e, ...) errno_msg_and_die(e, __func__ ": " __VA_ARGS__)
+#define func_perr_and_die(...)     perror_msg_and_die(__func__ ": " __VA_ARGS__)
+
 extern int read_int_from_file(const char *, int *);
 
 extern void set_sortby(const char *);
