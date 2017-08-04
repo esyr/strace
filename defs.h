@@ -408,6 +408,23 @@ void *xreallocarray(void *ptr, size_t nmemb, size_t size)
 	ATTRIBUTE_ALLOC_SIZE((2, 3));
 char *xstrdup(const char *str) ATTRIBUTE_MALLOC;
 
+/* Wrappers for if (debug_flag) error_msg(...) */
+#define debug_msg(...) \
+	do { \
+		if (debug_flag) \
+			error_msg(__VA_ARGS__); \
+	while (0)
+#define debugno_msg(errnum, ...) \
+	do { \
+		if (debug_flag) \
+			errno_msg(errnum, __VA_ARGS__); \
+	while (0)
+#define pdebug_msg(...) \
+	do { \
+		if (debug_flag) \
+			perror_msg(__VA_ARGS__); \
+	while (0)
+
 extern int read_int_from_file(const char *, int *);
 
 extern void set_sortby(const char *);
