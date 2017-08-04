@@ -200,7 +200,13 @@ build_mmap_cache(struct tcb* tcp)
 		}
 
 		if (tcp->mmap_cache_size >= cur_array_size) {
-			cur_array_size *= 2;
+			size_t new_size = cur_array_size * 2;
+
+			if (new_size < cur_array_size)
+				error_msg_and_die("unwind: overflow while "
+						  "tried to resize mmap cache");
+
+			cur_array_size = new_size;
 			cache_head = xreallocarray(cache_head, cur_array_size,
 						   sizeof(*cache_head));
 		}
