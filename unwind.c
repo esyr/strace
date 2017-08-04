@@ -347,7 +347,7 @@ print_stack_frame(struct tcb *tcp,
 	 * after a set_tid_address syscall
 	 * unw_get_reg returns IP == 0
 	 */
-	if(ip)
+	if (ip)
 		error_action(data, "unexpected_backtracing_error", ip);
 	return -1;
 }
