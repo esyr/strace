@@ -334,6 +334,22 @@ void error_msg_and_die(const char *fmt, ...)
 	die();
 }
 
+void errno_msg(int errnum, const char *fmt, ...)
+{
+	va_list p;
+	va_start(p, fmt);
+	verror_msg(errnum, fmt, p);
+	va_end(p);
+}
+
+void errno_msg_and_die(int errnum, const char *fmt, ...)
+{
+	va_list p;
+	va_start(p, fmt);
+	verror_msg(errnum, fmt, p);
+	die();
+}
+
 void error_msg_and_help(const char *fmt, ...)
 {
 	if (fmt != NULL) {
