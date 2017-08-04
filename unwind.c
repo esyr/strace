@@ -77,13 +77,13 @@ typedef void (*error_action_fn)(void *data,
  * Type used in stacktrace capturing
  */
 struct call_t {
-       struct call_t* next;
-       char *output_line;
+	struct call_t* next;
+	char *output_line;
 };
 
 struct queue_t {
-       struct call_t *tail;
-       struct call_t *head;
+	struct call_t *tail;
+	struct call_t *head;
 };
 
 static void queue_print(struct queue_t *queue);
@@ -449,24 +449,24 @@ sprint_call_or_error(const char *binary_filename,
 		     unsigned long true_offset,
 		     const char *error)
 {
-       char *output_line = NULL;
-       int n;
+	char *output_line = NULL;
+	int n;
 
-       if (symbol_name)
-               n = asprintf(&output_line, STACK_ENTRY_SYMBOL_FMT);
-       else if (binary_filename)
-               n = asprintf(&output_line, STACK_ENTRY_NOSYMBOL_FMT);
-       else if (error)
-               n = true_offset
-                       ? asprintf(&output_line, STACK_ENTRY_ERROR_WITH_OFFSET_FMT)
-                       : asprintf(&output_line, STACK_ENTRY_ERROR_FMT);
-       else
-               n = asprintf(&output_line, STACK_ENTRY_BUG_FMT, __FUNCTION__);
+	if (symbol_name)
+		n = asprintf(&output_line, STACK_ENTRY_SYMBOL_FMT);
+	else if (binary_filename)
+		n = asprintf(&output_line, STACK_ENTRY_NOSYMBOL_FMT);
+	else if (error)
+		n = true_offset
+			? asprintf(&output_line, STACK_ENTRY_ERROR_WITH_OFFSET_FMT)
+			: asprintf(&output_line, STACK_ENTRY_ERROR_FMT);
+	else
+		n = asprintf(&output_line, STACK_ENTRY_BUG_FMT, __FUNCTION__);
 
-       if (n < 0)
-               error_msg_and_die("error in asprintf");
+	if (n < 0)
+		error_msg_and_die("error in asprintf");
 
-       return output_line;
+	return output_line;
 }
 
 /*
@@ -556,14 +556,14 @@ unwind_print_stacktrace(struct tcb* tcp)
 		return;
 	}
 #endif
-       if (tcp->queue->head) {
-	       DPRINTF("tcp=%p, queue=%p", "queueprint", tcp, tcp->queue->head);
-	       queue_print(tcp->queue);
-       }
-       else if (rebuild_cache_if_invalid(tcp, __FUNCTION__)) {
-               DPRINTF("tcp=%p, queue=%p", "stackprint", tcp, tcp->queue->head);
-               stacktrace_walk(tcp, print_call_cb, print_error_cb, NULL);
-       }
+	if (tcp->queue->head) {
+		DPRINTF("tcp=%p, queue=%p", "queueprint", tcp, tcp->queue->head);
+		queue_print(tcp->queue);
+	}
+	else if (rebuild_cache_if_invalid(tcp, __FUNCTION__)) {
+		DPRINTF("tcp=%p, queue=%p", "stackprint", tcp, tcp->queue->head);
+		stacktrace_walk(tcp, print_call_cb, print_error_cb, NULL);
+	}
 }
 
 /*
