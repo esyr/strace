@@ -284,7 +284,7 @@ die(void)
 		cflag = 0;
 		cleanup();
 	}
-	exit(1);
+	_exit(1);
 }
 
 static void verror_msg(int err_no, const char *fmt, va_list p)
