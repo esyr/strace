@@ -76,6 +76,16 @@ void *xreallocarray(void *ptr, size_t nmemb, size_t size)
 	return p;
 }
 
+void *xgrowarray(void *ptr, size_t *nmemb, size_t grow_memb, size_t memb_size)
+{
+	if ((*nmemb + grow_memb) < *nmemb)
+		die_out_of_memory();
+
+	*nmemb += grow_memb;
+
+	return xreallocarray(ptr, *nmemb, memb_size);
+}
+
 char *xstrdup(const char *str)
 {
 	char *p = strdup(str);

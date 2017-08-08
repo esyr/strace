@@ -406,6 +406,7 @@ void *xcalloc(size_t nmemb, size_t size)
 	ATTRIBUTE_MALLOC ATTRIBUTE_ALLOC_SIZE((1, 2));
 void *xreallocarray(void *ptr, size_t nmemb, size_t size)
 	ATTRIBUTE_ALLOC_SIZE((2, 3));
+void *xgrowarray(void *ptr, size_t *nmemb, size_t grow_memb, size_t memb_size);
 char *xstrdup(const char *str) ATTRIBUTE_MALLOC;
 
 /* Wrappers for if (debug_flag) error_msg(...) */
