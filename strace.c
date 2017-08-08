@@ -152,7 +152,8 @@ struct tcb *printing_tcp = NULL;
 struct tcb *current_tcp;
 
 static struct tcb **tcbtab;
-static unsigned int nprocs, tcbtabsize;
+static unsigned int nprocs;
+size_t tcbtabsize;
 static const char *progname;
 
 unsigned os_release; /* generated from uname()'s u.release */
@@ -752,20 +753,21 @@ expand_tcbtab(void)
 	   callers have pointers and it would be a pain.
 	   So tcbtab is a table of pointers.  Since we never
 	   free the TCBs, we allocate a single chunk of many.  */
-	unsigned int new_tcbtabsize, alloc_tcbtabsize;
+	size_t alloc_tcbtabsize;
 	struct tcb *newtcbs;
+	struct tcb **tcb_ptr;
 
-	if (tcbtabsize) {
-		alloc_tcbtabsize = tcbtabsize;
-		new_tcbtabsize = tcbtabsize * 2;
-	} else {
-		new_tcbtabsize = alloc_tcbtabsize = 1;
-	}
+	if (tcbtabsize)
+		alloc_tcbtabsize = MIN(tcbtabsize, 64);
+	else
+		alloc_tcbtabsize = 1;
 
+	tcb_ptr = tcbtab + tcbtabsize;
 	newtcbs = xcalloc(alloc_tcbtabsize, sizeof(newtcbs[0]));
-	tcbtab = xreallocarray(tcbtab, new_tcbtabsize, sizeof(tcbtab[0]));
-	while (tcbtabsize < new_tcbtabsize)
-		tcbtab[tcbtabsize++] = newtcbs++;
+	tcbtab = xgrowarray(tcbtab, *tcbtabsize, alloc_tcbtabsize,
+			    sizeof(tcbtab[0]));
+	while (tcb_ptr < tcbtab + tcbtabsize)
+		*tcb_ptr++ = newtcbs++;
 }
 
 struct tcb *
