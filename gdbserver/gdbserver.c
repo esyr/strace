@@ -866,7 +866,7 @@ gdb_trace(void)
 			return false;
 		}
 
-		if (! (tcp->flags & TCB_GDB_CONT_PID_TID)) {
+		if (!(tcp->flags & TCB_GDB_CONT_PID_TID)) {
 			char cmd[] = "Hgxxxxxxxx";
 
 			sprintf(cmd, "Hg%x.%x", general_pid, stop.tid);
@@ -926,8 +926,8 @@ gdb_trace(void)
 		case gdb_stop_signal: {
 			siginfo_t *si = NULL;
 			size_t siginfo_size;
-			char *siginfo_reply =
-			gdb_xfer_read(gdb, "siginfo", "", &siginfo_size);
+			char *siginfo_reply = gdb_xfer_read(gdb, "siginfo", "",
+							    &siginfo_size);
 			if (siginfo_reply && siginfo_size == sizeof(siginfo_t))
 				si = (siginfo_t *) siginfo_reply;
 
@@ -1067,7 +1067,7 @@ gdb_getfdpath(pid_t tid, int fd, char *buf, unsigned bufsize)
 	 * As long as we assume a Linux target, we can peek at their procfs
 	 * just like normal getfdpath does.  Maybe that won't always be true.
 	 */
-	char linkpath[sizeof("/proc/%u/fd/%u") + 2 * sizeof(int)*3];
+	char linkpath[sizeof("/proc/%u/fd/%u") + 2 * sizeof(int) * 3];
 
 	sprintf(linkpath, "/proc/%u/fd/%u", tid, fd);
 
