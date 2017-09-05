@@ -384,7 +384,7 @@ gdb_init(void)
 	}
 
 	if (!gdb_start_noack(gdb))
-		error_msg("couldn't enable gdb noack mode");
+		error_msg("couldn't enable GDB server noack mode");
 
 	static char multi_cmd[] = "qSupported:multiprocess+"
 		";fork-events+;vfork-events+";
@@ -403,15 +403,15 @@ gdb_init(void)
 
 	gdb_multiprocess = strstr(reply, "multiprocess+") != NULL;
 	if (!gdb_multiprocess)
-		error_msg("couldn't enable gdb multiprocess mode");
+		error_msg("couldn't enable GDB server multiprocess mode");
 
 	if (followfork) {
 		gdb_fork = strstr(reply, "fork-events+") != NULL;
 		if (!gdb_fork)
-			error_msg("couldn't enable gdb fork events handling");
+			error_msg("couldn't enable GDB fork events handling");
 		gdb_fork = strstr(reply, "vfork-events+") != NULL;
 		if (!gdb_fork)
-			error_msg("couldn't enable gdb vfork events handling");
+			error_msg("couldn't enable GDB vfork events handling");
 	}
 
 	free(reply);
@@ -421,7 +421,7 @@ gdb_init(void)
 	gdb_send(gdb, extended_cmd, sizeof(extended_cmd) - 1);
 	gdb_extended = gdb_ok();
 	if (!gdb_extended)
-		error_msg("couldn't enable gdb extended mode");
+		error_msg("couldn't enable GDB extended mode");
 
 	static const char vcont_cmd[] = "vCont?";
 
@@ -429,7 +429,7 @@ gdb_init(void)
 	reply = gdb_recv(gdb, &size, false);
 	gdb_vcont = strncmp(reply, "vCont", 5) == 0;
 	if (!gdb_vcont)
-		error_msg("gdb server doesn't support vCont");
+		error_msg("GDB server doesn't support vCont");
 
 	free(reply);
 
@@ -472,7 +472,7 @@ gdb_init_syscalls(void)
 
 			if (ret < 0 ||
 			    (unsigned) ret >= (buf_size - (pos - buf))) {
-				error_msg("couldn't enable gdb syscall catch "
+				error_msg("couldn't enable GDB syscall catch "
 					  "filter");
 				free(buf);
 				goto gdb_init_syscalls_buf_fill_fail;
@@ -491,7 +491,7 @@ gdb_init_syscalls_buf_fill_fail:
 
 	gdb_send(gdb, syscall_set, strlen(syscall_set));
 	if (!gdb_ok())
-		error_msg("couldn't enable gdb syscall catching");
+		error_msg("couldn't enable GDB syscall catching");
 
 	if (syscall_set != syscall_cmd)
 		free((void *) syscall_set);
@@ -518,7 +518,8 @@ gdb_find_thread(int tid, bool current)
 			gdb_send(gdb, cmd, strlen(cmd));
 			current = gdb_ok();
 			if (!current)
-				error_msg("couldn't set gdb to thread %d", tid);
+				error_msg("couldn't set GDB server to thread "
+					  "%d", tid);
 		}
 
 		if (current)
@@ -604,10 +605,10 @@ void
 gdb_startup_child(char **argv)
 {
 	if (!gdb)
-		error_msg_and_die("gdb server not connected!");
+		error_msg_and_die("GDB server not connected!");
 
 	if (!gdb_extended)
-		error_msg_and_die("gdb server doesn't support starting "
+		error_msg_and_die("GDB server doesn't support starting "
 				  "processes!");
 
 	/*
@@ -648,16 +649,16 @@ gdb_startup_child(char **argv)
 
 	struct gdb_stop_reply stop = gdb_recv_stop(NULL);
 	if (stop.size == 0)
-		error_msg_and_die("gdb server doesn't support vRun!");
+		error_msg_and_die("GDB server doesn't support vRun!");
 
 	switch (stop.type) {
 		case gdb_stop_error:
-			error_msg_and_die("gdb server failed vRun with %.*s",
+			error_msg_and_die("GDB server failed vRun with %.*s",
 					  (int) stop.size, stop.reply);
 		case gdb_stop_trap:
 			break;
 		default:
-			error_msg_and_die("gdb server expected vRun trap, got: "
+			error_msg_and_die("GDB server expected vRun trap, got: "
 					  "%.*s",
 					  (int) stop.size, stop.reply);
 	}
@@ -686,10 +687,10 @@ void
 gdb_startup_attach(struct tcb *tcp)
 {
 	if (!gdb)
-		error_msg_and_die("gdb server not connected!");
+		error_msg_and_die("GDB server not connected!");
 
 	if (!gdb_extended)
-		error_msg_and_die("gdb server doesn't support attaching "
+		error_msg_and_die("GDB server doesn't support attaching "
 				  "processes!");
 
 	char cmd[] = "vAttach;XXXXXXXX";
@@ -731,18 +732,18 @@ gdb_startup_attach(struct tcb *tcp)
 			gdb_set_non_stop(gdb, false);
 		else
 			error_msg_and_die("Cannot connect to process %d: "
-					  "gdb server doesn't support vAttach!",
+					  "GDB server doesn't support vAttach!",
 					  tcp->pid);
 		gdb_send(gdb, cmd, strlen(cmd));
 		stop = gdb_recv_stop(NULL);
 		if (stop.size == 0)
 			error_msg_and_die("Cannot connect to process %d: "
-					  "gdb server doesn't support vAttach!",
+					  "GDB server doesn't support vAttach!",
 					  tcp->pid);
 		switch (stop.type) {
 		case gdb_stop_error:
 			error_msg_and_die("Cannot connect to process %d: "
-					  "gdb server failed vAttach with %.*s",
+					  "GDB server failed vAttach with %.*s",
 					  tcp->pid, (int) stop.size,
 					  stop.reply);
 		case gdb_stop_trap:
@@ -753,8 +754,8 @@ gdb_startup_attach(struct tcb *tcp)
 			/* fall through */
 		default:
 			error_msg_and_die("Cannot connect to process %d: "
-					  "gdb server expected vAttach trap, "
-					  "got: %.*s",
+					  "expected vAttach trap from "
+					  "GDB server, got: %.*s",
 					  tcp->pid, (int) stop.size,
 					  stop.reply);
 	    }
@@ -815,11 +816,11 @@ gdb_trace(void)
 	stop = gdb_recv_stop(NULL);
 	do {
 		if (stop.size == 0)
-			error_msg_and_die("gdb server gave an empty stop "
+			error_msg_and_die("GDB server gave an empty stop "
 					  "reply!?");
 		switch (stop.type) {
 		case gdb_stop_unknown:
-			error_msg_and_die("gdb server stop reply unknown: %.*s",
+			error_msg_and_die("GDB server stop reply unknown: %.*s",
 					  (int) stop.size, stop.reply);
 		case gdb_stop_error:
 			/* vCont error -> no more processes */
@@ -843,7 +844,7 @@ gdb_trace(void)
 		}
 
 		if (tid < 0 || tcp == NULL)
-			error_msg_and_die("couldn't read tid from stop reply: "
+			error_msg_and_die("couldn't read TID from stop reply: "
 					  "%.*s",
 					  (int) stop.size, stop.reply);
 
