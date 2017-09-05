@@ -187,17 +187,17 @@ gdb_begin(int fd)
 	/* duplicate the handle to separate read/write state */
 	int fd2 = dup(fd);
 	if (fd2 < 0)
-		err(1, "dup");
+		func_perr_and_die("dup");
 
 	/* open a FILE* for reading */
 	conn->in = fdopen(fd, "rb");
 	if (conn->in == NULL)
-		err(1, "fdopen");
+		func_perr_and_die("fdopen in");
 
 	/* open a FILE* for writing */
 	conn->out = fdopen(fd2, "wb");
 	if (conn->out == NULL)
-		err(1, "fdopen");
+		func_perr_and_die("fdopen out");
 
 	/* reset line state by acking any earlier input */
 	fputc('+', conn->out);
@@ -222,7 +222,7 @@ gdb_begin_command(const char *command)
 	 * stdio.
 	 */
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0)
-		err(1, "socketpair");
+		func_perr_and_die("socketpair");
 
 	if ((ret = posix_spawn_file_actions_init(&file_actions)))
 		errx(1, "posix_spawn_file_actions_init: %s", strerror(ret));
@@ -275,7 +275,7 @@ gdb_begin_tcp(const char *node, const char *service)
 	int s = getaddrinfo(node, service, &hints, &result);
 
 	if (s)
-		errx(1, "getaddrinfo: %s", gai_strerror(s));
+		func_err_and_die("getaddrinfo: %s", gai_strerror(s));
 
 	int fd = -1;
 	struct addrinfo *ai;
@@ -295,7 +295,7 @@ gdb_begin_tcp(const char *node, const char *service)
 
 	freeaddrinfo(result);
 	if (fd < 0)
-		err(1, "connect");
+		error_msg_and_die("Can't connect to GDB server");
 
 	/* initialize the rest of gdb on this handle */
 	return gdb_begin(fd);
@@ -307,7 +307,7 @@ gdb_begin_path(const char *path)
 	int fd = open(path, O_RDWR);
 
 	if (fd < 0)
-		err(1, "open");
+		func_perr_and_die("open");
 
 	/* initialize the rest of gdb on this handle */
 	return gdb_begin(fd);
@@ -346,11 +346,11 @@ send_packet(FILE *out, const char *command, size_t size)
 	fprintf(out, "#%02x", sum); /* packet end, checksum */
 	fflush(out);
 
-	if (ferror(out)) {
-		err(1, "send");
-	} else if (feof(out)) {
-		errx(0, "send: Connection closed");
-	}
+	if (ferror(out))
+		error_msg("Error sending message \"$%s\" to GDB server",
+			  command);
+	else if (feof(out))
+		error_msg_and_die("Connection to GDB server has been closed");
 }
 
 void
@@ -592,12 +592,14 @@ recv_packet(FILE *in, size_t *ret_size, bool* ret_sum_ok)
 	}
 
 	if (ferror(in)) {
-		err(1, "recv");
+		error_msg_and_exit("got stream error while receiving GDB server"
+				   " packet");
 	} else if (feof(in)) {
-		errx(0, "recv: Connection closed");
-	} else {
-		errx(1, "recv: Unknown connection error");
+		error_msg_and_exit("connection closed unexpectedly while "
+				   "receiving GDB server packet");
 	}
+
+	func_err_and_exit("unknown GDB server connection error");
 }
 
 char *
