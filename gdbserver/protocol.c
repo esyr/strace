@@ -206,10 +206,16 @@ gdb_begin(int fd)
 	return conn;
 }
 
+#define ZERO_OR_DIE(f, ...) \
+	do { \
+		int ret = f(__VA_ARGS__); \
+		if (ret) \
+			func_errno_msg_and_die(ret, #f); \
+	} while (0)
+
 struct gdb_conn *
 gdb_begin_command(const char *command)
 {
-	int ret;
 	int fds[2];
 	pid_t pid;
 	posix_spawn_file_actions_t file_actions;
@@ -224,35 +230,27 @@ gdb_begin_command(const char *command)
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0)
 		func_perr_and_die("socketpair");
 
-	if ((ret = posix_spawn_file_actions_init(&file_actions)))
-		errx(1, "posix_spawn_file_actions_init: %s", strerror(ret));
+	ZERO_OR_DIE(posix_spawn_file_actions_init, &file_actions);
 
 	/* Close our end in the child. */
-	if ((ret = posix_spawn_file_actions_addclose(&file_actions, fds[0])))
-		errx(1, "posix_spawn_file_actions_addclose: %s", strerror(ret));
+	ZERO_OR_DIE(posix_spawn_file_actions_addclose, &file_actions, fds[0]);
 
 	/* Copy the child's end to its stdout and stdin. */
 	if (fds[1] != STDOUT_FILENO) {
-		if ((ret = posix_spawn_file_actions_adddup2(&file_actions,
-		    fds[1], STDOUT_FILENO)))
-			errx(1, "posix_spawn_file_actions_adddup2: %s",
-			     strerror(ret));
-		if ((ret = posix_spawn_file_actions_addclose(&file_actions,
-		    fds[1])))
-			errx(1, "posix_spawn_file_actions_addclose: %s",
-			     strerror(ret));
+		ZERO_OR_DIE(posix_spawn_file_actions_adddup2, &file_actions,
+			    fds[1], STDOUT_FILENO);
+		ZERO_OR_DIE(posix_spawn_file_actions_addclose, &file_actions,
+			    fds[1]);
 	}
-	if ((ret = posix_spawn_file_actions_adddup2(&file_actions,
-	    STDOUT_FILENO, STDIN_FILENO)))
-		errx(1, "posix_spawn_file_actions_adddup2: %s", strerror(ret));
+	ZERO_OR_DIE(posix_spawn_file_actions_adddup2, &file_actions,
+		    STDOUT_FILENO, STDIN_FILENO);
 
 	/* Spawn the actual command. */
-	if ((ret = posix_spawn(&pid, sh, &file_actions, NULL, argv, environ)))
-		errx(1, "posix_spawn: %s", strerror(ret));
+	ZERO_OR_DIE(posix_spawn, &pid, sh, &file_actions, NULL, argv, environ);
 
 	/* Cleanup. */
-	if ((ret = posix_spawn_file_actions_destroy(&file_actions)))
-		errx(1, "posix_spawn_file_actions_destroy: %s", strerror(ret));
+	ZERO_OR_DIE(posix_spawn_file_actions_destroy, &file_actions);
+
 	close(fds[1]);
 
 	/* Avoid SIGPIPE when the command quits. */
