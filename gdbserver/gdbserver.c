@@ -285,10 +285,7 @@ gdb_recv_stop(struct gdb_stop_reply *stop_reply)
 		stop.reply = gdb_recv(gdb, &stop.size, true);
 	}
 
-	if (debug_flag) {
-		printf ("%s:%d %s\n", __FUNCTION__, __LINE__, stop.reply);
-		fflush(stdout);
-	}
+	func_dbg("processing GDB server stop reply: \"%s\"", stop.reply);
 
 	if (gdb_has_non_stop(gdb) && !stop_reply) {
 		/*
@@ -304,8 +301,7 @@ gdb_recv_stop(struct gdb_stop_reply *stop_reply)
 		 /* Do we have an out of order notification?  (see gdb_recv) */
 		reply = pop_notification(&stop_size);
 		if (reply) {
-			if (debug_flag)
-				printf ("popped %s\n", reply);
+			func_dbg("popped \"%s\"", reply);
 			stop.reply = reply;
 			reply = gdb_recv(gdb, &stop_size, false); /* vContc OK */
 		} else {
@@ -874,8 +870,7 @@ gdb_trace(void)
 			char cmd[] = "Hgxxxxxxxx";
 
 			sprintf(cmd, "Hg%x.%x", general_pid, stop.tid);
-			if (debug_flag)
-				printf ("%s %s\n", __FUNCTION__, cmd);
+			func_dbg("command: %s", cmd);
 		}
 		gdb_get_regs(tid);
 

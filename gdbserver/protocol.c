@@ -339,10 +339,7 @@ send_packet(FILE *out, const char *command, size_t size)
 	 * So just write raw here, and maybe let higher levels escape/RLE.
 	 */
 
-	if (debug_flag) {
-		printf("\tSending packet: $%s\n", command);
-		fflush(stdout);
-	}
+	debug_msg("\tSending packet to GDB server: \"$%s\"\n", command);
 
 	fputc('$', out); /*/ packet start */
 	fwrite(command, 1, size, out); /* payload */
@@ -530,10 +527,8 @@ recv_packet(FILE *in, size_t *ret_size, bool* ret_sum_ok)
 
 			reply[i] = '\0';
 
-			if (debug_flag) {
-				printf("\tPacket received: %s\n", reply);
-				fflush(stdout);
-			}
+			func_dbg("\tPacket received from GDB server: \"%s\"",
+				 reply);
 
 			return reply;
 
