@@ -340,6 +340,8 @@ gdb_recv_stop(struct gdb_stop_reply *stop_reply)
 		break;
 	}
 
+	/* XXX Shouldn't we free reply? */
+
 	return stop;
 }
 
@@ -382,6 +384,7 @@ gdb_init(void)
 	if (!gdb_start_noack(gdb))
 		error_msg("couldn't enable GDB server noack mode");
 
+	/* XXX QNonStop+? */
 	static char multi_cmd[] = "qSupported:multiprocess+"
 		";fork-events+;vfork-events+";
 

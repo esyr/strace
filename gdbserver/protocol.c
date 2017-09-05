@@ -253,7 +253,7 @@ gdb_begin_command(const char *command)
 
 	close(fds[1]);
 
-	/* Avoid SIGPIPE when the command quits. */
+	/* XXX Avoid SIGPIPE when the command quits. */
 	signal(SIGPIPE, SIG_IGN);
 
 	/* initialize the rest of gdb on this handle */
@@ -340,6 +340,7 @@ send_packet(FILE *out, const char *command, size_t size)
 	debug_msg("\tSending packet to GDB server: \"$%s\"\n", command);
 
 	fputc('$', out); /*/ packet start */
+	/* XXX check for partial write */
 	fwrite(command, 1, size, out); /* payload */
 	fprintf(out, "#%02x", sum); /* packet end, checksum */
 	fflush(out);
@@ -363,6 +364,7 @@ gdb_send(struct gdb_conn *conn, const char *command, size_t size)
 			break;
 
 		/* look for '+' ACK or '-' NACK/resend */
+		/* XXX Doesn't it ignore any other messages? */
 		acked = fgetc_unlocked(conn->in) == '+';
 	} while (!acked);
 }
@@ -426,6 +428,7 @@ pop_notification(size_t *size)
 	char *notification;
 
 	*size = 0;
+	/* XXX */
 	for (idx = 0; idx < notifications_size; idx++) {
 		if (notifications[idx] != NULL)
 			break;
@@ -485,11 +488,16 @@ recv_packet(FILE *in, size_t *ret_size, bool* ret_sum_ok)
 		sum += (uint8_t) c;
 		switch (c) {
 		case '$': /* new packet?  start over... */
+			/* XXX should we indicate an error in case of receiving
+			 *     partial packet? */
 			i = 0;
 			sum = 0;
 			escape = false;
 			continue;
 		case '%': {
+			/* XXX refactor into a separate function, do not bail
+			 *     out on unknown notification? */
+
 			char pcr[6];
 			int idx = 0;
 
